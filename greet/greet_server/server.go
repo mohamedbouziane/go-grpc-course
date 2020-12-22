@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +12,16 @@ import (
 )
 
 type server struct{}
+
+func (*server) Greet(ctx context.Context, req *greetpb.GreetingRequest) (*greetpb.GreetingResponse, error) {
+	fmt.Printf("Greet function was invoked with %v", req)
+	fristName := req.GetGreeting().GetFirstName()
+	result := "Hello " + fristName
+	res := &greetpb.GreetingResponse{
+		Result: result,
+	}
+	return res, nil
+}
 
 func main() {
 	fmt.Printf("Hello World")
