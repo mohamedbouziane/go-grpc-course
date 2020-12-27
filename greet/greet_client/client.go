@@ -10,13 +10,22 @@ import (
 	"github.com/go-grpc-course/greet/greetpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
 func main() {
 	fmt.Println("Hello I'am a client")
 
-	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	certFile := "ssl/ca.crt"
+	creds, sslErr := credentials.NewClientTLSFromFile(certFile, "")
+	if sslErr != nil{
+		log.Fatalf("Error when loading certificate: %v", sslErr)
+		return
+	}
+	opts := grpc.WithTransportCredentials(creds)
+
+	cc, err := grpc.Dial("localhost:50051", opts)
 	if err != nil {
 		log.Fatalf("Could not connect %v", err)
 	}
@@ -24,12 +33,12 @@ func main() {
 	defer cc.Close()
 	c := greetpb.NewGreetServiceClient(cc)
 
-	//doUnary(c)
+	doUnary(c)
 	//doServerStreaming(c)
 	// doClientStreaming(c)
 	// doBiDiStreaming(c)
-	doUnaryWithDeadline(c, 5*time.Second)
-	doUnaryWithDeadline(c, 1*time.Second)
+	// doUnaryWithDeadline(c, 5*time.Second)
+	// doUnaryWithDeadline(c, 1*time.Second)
 
 }
 
@@ -47,7 +56,7 @@ func doUnary(c greetpb.GreetServiceClient) {
 	if err != nil {
 		log.Fatalf("error while calling Greet RPC : %v", err)
 	}
-	log.Panicf("Response from Greet: %v", res.Result)
+	fmt.Printf("Response from Greet: %v", res.Result)
 }
 
 func doServerStreaming(c greetpb.GreetServiceClient) {
@@ -76,7 +85,7 @@ func doServerStreaming(c greetpb.GreetServiceClient) {
 		if err != nil {
 			log.Fatalf("error while reading the stream: %v", err)
 		}
-		log.Printf("Response fron the GreetManyTimes; %v", msg.GetResult())
+		fmt.Printf("Response fron the GreetManyTimes; %v", msg.GetResult())
 	}
 
 }
@@ -241,5 +250,5 @@ func doUnaryWithDeadline(c greetpb.GreetServiceClient, timeout time.Duration) {
 		}
 		return
 	}
-	log.Printf("Response from GreetWithDeadline: %v", res.Result)
+	fmt.Printf("Response from GreetWithDeadline: %v", res.Result)
 }
