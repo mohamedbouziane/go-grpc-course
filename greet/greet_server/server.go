@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-grpc-course/greet/greetpb"
+	"google.golang.org/grpc/reflection"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -124,17 +125,24 @@ func main() {
 		log.Fatalf("failed to run server: %v", err)
 	}
 
-	certFile := "ssl/server.crt"
-	keyFile := "ssl/server.pem"
-
-	creds, sslErr := credentials.NewServerTLSFromFile(certFile, keyFile)
-	if sslErr != nil {
-		log.Fatalf("Failed loading certificates: %v", sslErr)
+	opts := []grpc.ServerOption{}
+	tls := false
+	if tls {
+		certFile := "ssl/server.crt"
+		keyFile := "ssl/server.pem"
+		creds, sslErr := credentials.NewServerTLSFromFile(certFile, keyFile)
+		if sslErr != nil {
+			log.Fatalf("Failed loading certificates: %v", sslErr)
+			return
+		}
+		opts = append(opts, grpc.Creds(creds))
 	}
-	opts:= grpc.Creds(creds)
 
-	s := grpc.NewServer(opts)
+	s := grpc.NewServer(opts...)
 	greetpb.RegisterGreetServiceServer(s, &server{})
+
+	reflection.Register(s)
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("error : %v", err)
 	}
