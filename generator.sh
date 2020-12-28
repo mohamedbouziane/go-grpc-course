@@ -2,6 +2,9 @@
 
 protoc  --go_out=plugins=grpc:.   greet/greetpb/greet.proto
 
+protoc  --go_out=plugins=grpc:.   blog/blogpb/blog.proto
+
+
 # Generate CA's private key and self-signed certificate
 openssl req -x509 -newkey rsa:4096 -days 365 -keyout ca-key.pem -out ca-cert.pem -subj "/C=fr/ST=occitanie/L=toulouse/O=Moh/OU=mohtech/CN=mac/emailAddress=djmohamed1@gmail.com"
 
